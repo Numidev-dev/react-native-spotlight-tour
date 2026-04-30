@@ -40,7 +40,7 @@ export interface ShapeOptions {
    * - `circle`
    * - `rectangle`
    *
-   * @default circle
+   * @default rectangle
    */
   type?: Shape;
 }
@@ -192,7 +192,8 @@ export interface TourStep extends TooltipProps {
    * Specifies the transition motion for the step. You can set the default
    * motion globally on the `SpotlightTourProvider` props too.
    *
-   * @default bounce
+   * @default slide
+   * @abstract Not re-implemented yet, will default to 'slide' behavior.
    */
   motion?: Motion;
   /**

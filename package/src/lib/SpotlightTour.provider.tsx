@@ -26,7 +26,8 @@ import {
 } from "./SpotlightTour.context";
 import { TourOverlay, type TourOverlayRef } from "./components/tour-overlay/TourOverlay.component";
 
-import type { ColorValue, LayoutRectangle } from "react-native";
+import { Color } from "@shopify/react-native-skia";
+import type { LayoutRectangle } from "react-native";
 
 export interface SpotlightTourProviderProps extends TooltipProps {
   /**
@@ -41,6 +42,7 @@ export interface SpotlightTourProviderProps extends TooltipProps {
    * value on each step too.
    *
    * @default bounce
+   * @deprecated
    */
   motion?: Motion;
   /**
@@ -89,7 +91,7 @@ export interface SpotlightTourProviderProps extends TooltipProps {
    *
    * @default black
    */
-  overlayColor?: ColorValue;
+  overlayColor?: Color;
   /**
    * The opacity applied to the overlay of the tour (between 0 to 1).
    *
@@ -117,7 +119,7 @@ export const SpotlightTourProvider = forwardRef<SpotlightTour, SpotlightTourProv
     arrow,
     children,
     flip,
-    motion = "bounce",
+    motion = "slide",
     nativeDriver = true,
     offset,
     onBackdropPress,
@@ -127,7 +129,7 @@ export const SpotlightTourProvider = forwardRef<SpotlightTour, SpotlightTourProv
     overlayColor = "black",
     overlayOpacity = 0.45,
     placement,
-    shape = "circle",
+    shape = "rectangle",
     shift,
     steps,
   } = props;

@@ -39,6 +39,9 @@ interface PointTransitionOptions extends BaseTransitionOptions {
 
 type TransitionOptions = PointTransitionOptions | ValueTransitionOptions;
 
+/**
+ * @deprecated This function is not used anymore.
+ */
 export function transitionOf(options: TransitionOptions): Animated.CompositeAnimation {
   const {
     motion,

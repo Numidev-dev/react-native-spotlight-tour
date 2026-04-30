@@ -1,3 +1,6 @@
+/**
+ * @deprecated This entire file is not used anymore.
+ */
 import { memo, useEffect, useMemo, useRef } from "react";
 import isEqual from "react-fast-compare";
 import { Animated } from "react-native";

@@ -10,7 +10,6 @@ import {
   useFloating,
 } from "@floating-ui/react-native";
 import {
-  type ComponentType,
   type RefObject,
   forwardRef,
   useCallback,
@@ -22,13 +21,13 @@ import {
 } from "react";
 import {
   Animated,
-  type ColorValue,
   type LayoutRectangle,
   Modal,
   Platform,
+  StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
-import { Defs, Mask, Rect, Svg } from "react-native-svg";
 
 import { vh, vw } from "../../../helpers/responsive";
 import {
@@ -43,11 +42,25 @@ import {
 } from "../../SpotlightTour.context";
 
 import { Css, DEFAULT_ARROW, arrowCss } from "./TourOverlay.styles";
-import { CircleShape } from "./shapes/CircleShape.component";
-import { RectShape } from "./shapes/RectShape.component";
 
 import type { Optional, ToOptional } from "../../../helpers/common";
-import type { ShapeProps } from "../../../helpers/shape";
+
+import {
+  Canvas,
+  Color,
+  Group,
+  Path,
+  Rect,
+  Skia,
+} from "@shopify/react-native-skia";
+
+import {
+  Easing,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+
 
 export interface TourOverlayRef {
   hideTooltip: () => Promise<Animated.EndResult>;
@@ -55,7 +68,7 @@ export interface TourOverlayRef {
 
 interface TourOverlayProps extends ToOptional<TooltipProps> {
   backdropOpacity: number;
-  color: ColorValue;
+  color: Color;
   current: Optional<number>;
   motion: Motion;
   nativeDriver: boolean | OSConfig<boolean>;
@@ -80,7 +93,6 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
   } = props;
 
   const { goTo, next, pause, previous, resume, start, steps, stop } = useContext(SpotlightTourContext);
-
   const arrowRef = useRef<View>(null);
 
   const floating = useMemo((): TooltipProps => ({
@@ -98,10 +110,6 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
   const { floatingStyles, middlewareData, placement, refs } = useFloating(floatingOptions);
 
   const tooltipOpacity = useRef(new Animated.Value(0));
-
-  const stepMotion = useMemo((): Motion => {
-    return tourStep.motion ?? motion;
-  }, [tourStep, motion]);
 
   const shapeOptions = useMemo((): Required<ShapeOptions> => {
     const options = tourStep.shape ?? shape;
@@ -125,13 +133,6 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     });
   }, [nativeDriver]);
 
-  const ShapeMask = useMemo(<P extends ShapeProps>(): ComponentType<P> => {
-    switch (shapeOptions.type) {
-      case "circle": return CircleShape;
-      case "rectangle": return RectShape;
-    }
-  }, [shapeOptions]);
-
   const handleBackdropPress = useCallback((): void => {
     const handler = tourStep.onBackdropPress ?? onBackdropPress;
 
@@ -149,6 +150,8 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     }
   }, [tourStep, onBackdropPress, current, goTo, next, previous, start, stop, pause, resume]);
 
+
+  // Animation de fade de la tooltip (show)
   useEffect(() => {
     const { height, width } = spot;
 
@@ -163,6 +166,7 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     }
   }, [spot, useNativeDriver]);
 
+  // Animation de fade de la tooltip (hide)
   useImperativeHandle<TourOverlayRef, TourOverlayRef>(ref, () => ({
     hideTooltip: () => {
       return new Promise(resolve => {
@@ -180,49 +184,109 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     },
   }), [current, useNativeDriver]);
 
+  // Reférence de placement pour la tooltip
+  useEffect(() => {
+    const padding = shapeOptions.padding;
+    refs.setReference({
+      getBoundingClientRect: () => ({
+        x: spot.x - padding / 2,
+        y: spot.y - padding / 2,
+        width: spot.width + padding,
+        height: spot.height + padding,
+      }),
+    });
+  }, [spot, shapeOptions.padding]);
+
+  const x = useSharedValue(spot.x);
+  const y = useSharedValue(spot.y);
+  const w = useSharedValue(spot.width);
+  const h = useSharedValue(spot.height);
+
+  // Placement et formes (rectangle ou cercle)
+  const spotPath = useDerivedValue(() => {
+    const p = Skia.Path.Make();
+
+    const padding = shapeOptions.padding;
+
+    const left = x.value - padding / 2;
+    const top = y.value - padding / 2;
+    const width = w.value + padding;
+    const height = h.value + padding;
+
+    if (shapeOptions.type === "circle") {
+      const cx = left + width / 2;
+      const cy = top + height / 2;
+      const r = Math.max(width, height) / 2;
+
+      p.addCircle(cx, cy, r);
+    } else {
+      p.addRRect({
+        rect: { x: left, y: top, width, height },
+        rx: 4,
+        ry: 4,
+      });
+    }
+
+    return p;
+  });
+
+  // Animations (slide) // -> ajouter bounce et fade ?
+  useEffect(() => {
+    x.value = withTiming(spot.x, {
+      duration: 400,
+      easing: Easing.inOut(Easing.cubic),
+    });
+
+    y.value = withTiming(spot.y, {
+      duration: 400,
+      easing: Easing.inOut(Easing.cubic),
+    });
+
+    w.value = withTiming(spot.width, {
+      duration: 400,
+      easing: Easing.inOut(Easing.cubic),
+    });
+
+    h.value = withTiming(spot.height, {
+      duration: 400,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  }, [spot, motion]);
+
   return (
     <Modal
       animationType="fade"
       presentationStyle="overFullScreen"
-      supportedOrientations={["portrait", "landscape", "landscape-left", "landscape-right", "portrait-upside-down"]}
-      transparent={true}
+      transparent
       visible={current !== undefined}
     >
-      <View testID="Overlay View" style={Css.overlayView}>
-        <Svg
-          testID="Spot Svg"
-          height={vh(100)}
-          width={vw(100)}
-          viewBox={`0 0 ${vw(100)} ${vh(100)}`}
+      <View style={Css.overlayView}>
+
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
           onPress={handleBackdropPress}
-          shouldRasterizeIOS={true}
-          renderToHardwareTextureAndroid={true}
-        >
-          <Defs>
-            <Mask id="mask" x={0} y={0} height="100%" width="100%">
-              <Rect height={vh(100)} width={vw(100)} fill="#fff" />
-              <ShapeMask
-                spot={spot}
-                setReference={refs.setReference}
-                motion={stepMotion}
-                padding={shapeOptions.padding}
-                useNativeDriver={useNativeDriver}
-              />
-            </Mask>
-          </Defs>
-          <Rect
-            height={vh(100)}
-            width={vw(100)}
-            fill={color}
-            mask="url(#mask)"
-            opacity={backdropOpacity}
-          />
-        </Svg>
+        />
+
+        <Canvas style={{ width: vw(100), height: vh(100) }}>
+          <Group layer>
+            <Rect
+              x={0}
+              y={0}
+              width={vw(100)}
+              height={vh(100)}
+              color={color}
+              opacity={backdropOpacity}
+            />
+
+            <Group blendMode="clear">
+              <Path path={spotPath} />
+            </Group>
+          </Group>
+        </Canvas>
 
         {current !== undefined && (
           <Animated.View
             ref={refs.setFloating}
-            testID="Tooltip View"
             style={{ ...floatingStyles, opacity: tooltipOpacity.current }}
           >
             <tourStep.render
@@ -236,14 +300,16 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
               resume={resume}
               goTo={goTo}
             />
+
             {floating.arrow !== false && (
               <View
                 style={[
                   Css.tooltipArrow,
                   arrowCss({
-                    arrow: typeof floating.arrow !== "boolean"
-                      ? floating.arrow
-                      : undefined,
+                    arrow:
+                      typeof floating.arrow !== "boolean"
+                        ? floating.arrow
+                        : undefined,
                     data: middlewareData.arrow,
                     placement,
                   }),
