@@ -1,8 +1,8 @@
 {
-  "name": "react-native-spotlight-tour-workspace",
-  "description": "The React Native Spotlight Tour workspace",
-  "repository": "git@github.com:stackbuilders/react-native-spotlight-tour.git",
-  "author": "Stack Builders <info@stackbuilders.com> (https://github.com/stackbuilders)",
+  "name": "@numidev/react-native-spotlight-tour",
+  "description": "React Native library to implement a highly customizable app tour feature with an awesome spotlight effect. Fork of https://github.com/stackbuilders/react-native-spotlight-tour, refactored to use `@shopify/react-native-skia` + `react-native-reanimated` to hugely increase spotlight animations performances.",
+  "repository": "git@github.com:Numidev-dev/react-native-spotlight-tour.git",
+  "author": "Numidev <contact@numidev.fr> (https://github.com/Numidev-dev)",
   "license": "MIT",
   "workspaces": [
     "example/",
