@@ -32,6 +32,7 @@ import {
 import { vh, vw } from "../../../helpers/responsive";
 import {
   type BackdropPressBehavior,
+  HighlightBorderRadius,
   type Motion,
   type OSConfig,
   type Shape,
@@ -76,6 +77,7 @@ interface TourOverlayProps extends ToOptional<TooltipProps> {
   shape: Shape | ShapeOptions;
   spot: LayoutRectangle;
   tourStep: TourStep;
+  highlightBorderRadius: HighlightBorderRadius
 }
 
 export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, ref) => {
@@ -89,6 +91,7 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     shape,
     spot,
     tourStep,
+    highlightBorderRadius,
     ...tooltipProps
   } = props;
 
@@ -222,8 +225,8 @@ export const TourOverlay = forwardRef<TourOverlayRef, TourOverlayProps>((props, 
     } else {
       p.addRRect({
         rect: { x: left, y: top, width, height },
-        rx: 4,
-        ry: 4,
+        rx: highlightBorderRadius.x,
+        ry: highlightBorderRadius.y,
       });
     }
 

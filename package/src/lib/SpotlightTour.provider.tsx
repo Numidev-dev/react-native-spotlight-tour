@@ -11,6 +11,7 @@ import { type ChildFn, isChildFunction } from "../helpers/common";
 
 import {
   type BackdropPressBehavior,
+  HighlightBorderRadius,
   type Motion,
   type OSConfig,
   type Shape,
@@ -109,6 +110,11 @@ export interface SpotlightTourProviderProps extends TooltipProps {
    * An array of `TourStep` objects that define each step of the tour.
    */
   steps: TourStep[];
+  
+  /**
+   * An object {x, y}, defining the border radius of the highlight component. 
+   */
+  highlightBorderRadius: HighlightBorderRadius
 }
 
 /**
@@ -132,6 +138,7 @@ export const SpotlightTourProvider = forwardRef<SpotlightTour, SpotlightTourProv
     shape = "rectangle",
     shift,
     steps,
+    highlightBorderRadius = {x: 4, y: 4}
   } = props;
 
   const [current, setCurrent] = useState<number>();
@@ -285,6 +292,7 @@ export const SpotlightTourProvider = forwardRef<SpotlightTour, SpotlightTourProv
         offset={offset}
         placement={placement}
         shift={shift}
+        highlightBorderRadius={highlightBorderRadius}
       />
     </SpotlightTourContext.Provider>
   );

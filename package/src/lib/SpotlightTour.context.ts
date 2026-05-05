@@ -282,6 +282,11 @@ export interface SpotlightTourCtx extends SpotlightTour {
   steps: TourStep[];
 }
 
+export interface HighlightBorderRadius{
+  x: number;
+  y: number;
+}
+
 export const ZERO_SPOT: LayoutRectangle = {
   height: 0,
   width: 0,
