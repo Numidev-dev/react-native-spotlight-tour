@@ -1,6 +1,6 @@
 {
   "name": "@numidev/react-native-spotlight-tour",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Native library to implement a highly customizable app tour feature with an awesome spotlight effect. Fork of https://github.com/stackbuilders/react-native-spotlight-tour, refactored to use `@shopify/react-native-skia` + `react-native-reanimated` to hugely increase spotlight animations performances.",
   "repository": "git@github.com:Numidev-dev/react-native-spotlight-tour.git",
   "homepage": "https://github.com/Numidev-dev/react-native-spotlight-tour",
