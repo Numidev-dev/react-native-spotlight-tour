@@ -106,15 +106,17 @@ export interface SpotlightTourProviderProps extends TooltipProps {
    * @default circle
    */
   shape?: Shape | ShapeOptions;
+
+  /**
+   * Defines the border radius of the highlight component. 
+   * @default ```{x: 4, y: 4}```
+   */
+  highlightBorderRadius?: HighlightBorderRadius
+
   /**
    * An array of `TourStep` objects that define each step of the tour.
    */
   steps: TourStep[];
-  
-  /**
-   * An object {x, y}, defining the border radius of the highlight component. 
-   */
-  highlightBorderRadius: HighlightBorderRadius
 }
 
 /**
